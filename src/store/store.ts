@@ -6,7 +6,9 @@ export interface IStore {
     spreadsheet: SpreadSheetType,
     setActiveCell: (activeCell: ICell) => void,
     updateSpreadSheet: (spreadsheet: SpreadSheetType) => void,
-    updateValues: (cell: ICell) => void
+    updateValues: (cell: ICell, spreadsheet: SpreadSheetType) => void,
+    storeId: string,
+    setStoreId: (value: string) => void
 }
 
 const initialState: SpreadSheetType = {}
@@ -14,12 +16,14 @@ const initialState: SpreadSheetType = {}
 export const useStore = create<IStore>((set) => ({
     activeCell: { id: 'A1', value: '', reference: '', formula: ''},
     spreadsheet: initialState,
+    storeId: '',
+    setStoreId: (storeId: string) => set({storeId}),
     setActiveCell: (activeCell: ICell) => set({ activeCell }),
     updateSpreadSheet: (spreadsheet: SpreadSheetType) => set({spreadsheet}),
-    updateValues: (newCell: ICell) => (state: IStore) => {
-        console.log(newCell);
-        for (const i in state.spreadsheet) {
-            let spreadsheetCell = state.spreadsheet[newCell?.reference?.[0]];
+    updateValues: (newCell: ICell, spreadsheet: SpreadSheetType) => {
+        for (const i in spreadsheet) {
+            let spreadsheetCell = spreadsheet[newCell.reference];
+            console.log(spreadsheetCell)
             if (spreadsheetCell !== undefined) {
                 spreadsheetCell = {
                     ...spreadsheetCell,
@@ -27,9 +31,8 @@ export const useStore = create<IStore>((set) => ({
                     value: i === newCell.reference ? '#CIRCULAR' : newCell.value,
                     reference: newCell.reference
                 }
-                console.log(spreadsheetCell)
             }
         }
-        return {spreadsheet: state.spreadsheet}
+        set({spreadsheet})
     }
 }))

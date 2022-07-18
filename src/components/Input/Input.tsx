@@ -19,12 +19,13 @@ export const Input = ({
     className,
     cellId
 }: IInputData) => {
-    const { updateSpreadSheet, spreadsheet, updateValues } = useStore();
+    const { updateSpreadSheet, spreadsheet } = useStore();
     const inputRef = useRef<HTMLInputElement>(null)
     const [cell, setCell] = useState<ICell>(spreadsheet?.[cellId] || {} as ICell);
 
     /**
      * Should be improved to execute just one time
+     * It's missing a
      */
     const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         const rawValue = e.target.value;
@@ -37,8 +38,12 @@ export const Input = ({
 
         if (rawValue.startsWith('=')) {
             const found = rawValue.match(FORMULA_REGEX) || [];
-            const rawFound = found[0]?.slice(1, found[0].length + 1);
+            const rawFound = found[0]?.slice(1, found[0].length);
 
+            /**
+             * This should be another function
+             * It should be outside component
+             */
             let firstKey = rawFound;
             let error = false;
             while(spreadsheet[firstKey]?.reference !== '' || !spreadsheet[firstKey]) {
@@ -58,6 +63,8 @@ export const Input = ({
                     error
                 }
                 setCell(cellValue);
+            } else {
+                setCell(data);
             }
         } else {
             setCell(data);
@@ -65,17 +72,29 @@ export const Input = ({
     }, [cellId, spreadsheet]);
 
     const handleInputBlur = useCallback((e: any) => {
-
-    }, []);
-
-    useEffect(() => {
         const sheet = {
             ...spreadsheet,
             [cellId]: cell
         }
 
         updateSpreadSheet(sheet);
-    }, [cell, cellId, updateSpreadSheet])
+        // updateValues(cell, spreadsheet)
+    }, [cell, updateSpreadSheet]);
+
+    const handleKeyUp = useCallback((e: any) => {
+        if (["Enter", "Tab", "Return"].includes(e.key)) {
+            inputRef?.current?.blur()
+        }
+    }, [inputRef?.current])
+
+    // useEffect(() => {
+    //     const sheet = {
+    //         ...spreadsheet,
+    //         [cellId]: cell
+    //     }
+    //
+    //     updateSpreadSheet(sheet);
+    // }, [cell, cellId, updateSpreadSheet])
     return (
         <InputElement
             ref={inputRef}
@@ -85,7 +104,9 @@ export const Input = ({
             defaultValue={cell?.formula?.length > 0 ? cell?.formula : cell?.value}
             onChange={handleInputChange}
             onBlur={handleInputBlur}
+            onKeyUp={handleKeyUp}
             autoFocus
+            title={!!cell.error ? 'ERROR: Circular Referenced' : cell.value}
         />
     )
 }

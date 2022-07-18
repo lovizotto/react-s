@@ -19,10 +19,12 @@ export const Wrapper = styled.div`
   flex-direction: row;
   height: 40px;
   width: 100%;
+  box-sizing: border-box;
 `
 
 const Cell = styled("div")<{ index: string }>`
   display: flex;
+  box-sizing: border-box;
   align-items: center;
   justify-content: center;
   width: ${props => props.index === '-1' ? 40 : 100}px;
