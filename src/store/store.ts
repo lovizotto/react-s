@@ -1,10 +1,35 @@
 import create from 'zustand'
-import {ICell, IStore} from "../@types";
-import {SpreadSheetType} from "../@types/IStore";
+import {ICell} from '../@types/ICell';
+export type SpreadSheetType = {[key: string]: ICell}
+export interface IStore {
+    activeCell: ICell,
+    spreadsheet: SpreadSheetType,
+    setActiveCell: (activeCell: ICell) => void,
+    updateSpreadSheet: (spreadsheet: SpreadSheetType) => void,
+    updateValues: (cell: ICell) => void
+}
+
+const initialState: SpreadSheetType = {}
 
 export const useStore = create<IStore>((set) => ({
-    activeCell: { col: 'A', row: '1', type: "raw", value: '', references: [], formula: ''},
+    activeCell: { id: 'A1', value: '', reference: '', formula: ''},
+    spreadsheet: initialState,
     setActiveCell: (activeCell: ICell) => set({ activeCell }),
-    spreadsheet: undefined,
-    updateSpreadSheet: (spreadsheet: SpreadSheetType) => set({ spreadsheet })
+    updateSpreadSheet: (spreadsheet: SpreadSheetType) => set({spreadsheet}),
+    updateValues: (newCell: ICell) => (state: IStore) => {
+        console.log(newCell);
+        for (const i in state.spreadsheet) {
+            let spreadsheetCell = state.spreadsheet[newCell?.reference?.[0]];
+            if (spreadsheetCell !== undefined) {
+                spreadsheetCell = {
+                    ...spreadsheetCell,
+                    formula: newCell.formula,
+                    value: i === newCell.reference ? '#CIRCULAR' : newCell.value,
+                    reference: newCell.reference
+                }
+                console.log(spreadsheetCell)
+            }
+        }
+        return {spreadsheet: state.spreadsheet}
+    }
 }))

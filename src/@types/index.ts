@@ -1,2 +1,1 @@
-export { ICell, CellContentType } from './ICell';
-export { IStore } from './IStore';
+export { ICell } from './ICell';

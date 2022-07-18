@@ -1,27 +1,19 @@
 import React, {
-    useCallback,
-    useState
+    useCallback, useMemo
 } from 'react';
 import styled from 'styled-components'
 import {ALPHABET, LINE_AMOUNT} from  '../../constants/Config';
 import {Row} from '../Row';
-import {useStore} from "../../store/store";
+import {SheetHeadColumns} from "./SheetHeadColumns";
 
 export const Sheet = () => {
-    const {setActiveCell} = useStore();
-    const handleTableClick = useCallback((e: any) => {
-        if (e.target.dataset.col) {
-            setActiveCell({
-                ...e.target.dataset,
-                value: ''
-            })
-        }
-    }, [])
-    const lines = new Array(LINE_AMOUNT).fill(undefined)
+    const lines = useMemo(() => new Array(LINE_AMOUNT).fill(undefined), []);
     return (
-        <Table onClick={handleTableClick}>
+        <Table>
+            <SheetHeadColumns />
             { lines.map((item, index) => {
                 return (
+                    index > 0 &&
                     <Row
                         key={index}
                         line={index.toString()}
@@ -37,6 +29,6 @@ const Table = styled.div`
     flex-direction: column;
     width: ${ALPHABET.length * 100}px;
     height: 100%;
-    background: gray;
+    background: #efefef;
 `
 export {}

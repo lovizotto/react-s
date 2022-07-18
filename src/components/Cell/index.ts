@@ -1,1 +1,1 @@
-export { CellContentWrapper as Cell } from './Cell';
+export { Cell } from './Cell';

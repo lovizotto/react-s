@@ -1,71 +1,62 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useState} from "react";
 import styled from "styled-components";
-import {Input} from "./Input";
+import {Input} from "../Input";
 import {useStore} from "../../store/store";
-import {CellContentType} from "../../@types";
+import shallow from "zustand/shallow";
 
 export type ICellProps = {
-    row: string,
-    col: string,
-    type: CellContentType,
-    children: any,
-    isIndex: boolean,
+    id: string,
     className?: string,
-    focused: boolean
+    onClick: (id: string) => void
 }
-const Cell = ({
-  row,
-  col,
-  type,
-  children,
-  isIndex,
-  focused,className }: ICellProps) => {
-    const { updateSpreadSheet, spreadsheet } = useStore();
-    const cellElement = useRef(null);
-    const inputRef = useRef<HTMLInputElement>(null);
+export const Cell = ({
+                  id,
+                  onClick,
+                  className
+              }: ICellProps) => {
+    const spreadsheet = useStore(state => state.spreadsheet, shallow);
+    const [focused, setFocused] = useState<boolean>(false)
 
-    useEffect(() => {
-        if (focused && inputRef.current) {
-            inputRef.current.focus();
-        }
-    }, [focused]);
+    const handleClick = useCallback(() => {
+        onClick(id)
+        setFocused(!focused)
+    }, [onClick, id, focused]);
 
+    const handleBlur = useCallback(() => {
+        setFocused(false);
+    }, [])
     return (
-        <div
-            ref={cellElement}
-            data-col={col}
-            data-row={row}
-            data-type={type}
+        <CellContentWrapper
+            data-id={id}
+            focused={focused}
             className={className}
-            // onClick={() => setEditing(focused && true)}
+            onClick={handleClick}
+            onBlur={handleBlur}
+            error={!!spreadsheet?.[id]?.error}
         >
             {focused
                 ? (
                     <Input
-                        ref={inputRef}
-                        col={col}
-                        row={row}
-                        onChange={(value) => console.log(value)}
+                       cellId={id}
                     />
-                ) : spreadsheet?.[col+row]?.value || children}
-        </div>
+                )
+                : spreadsheet?.[id]?.value
+            }
+        </CellContentWrapper>
     );
 }
 
-export const CellContentWrapper = styled(Cell)`
+const CellContentWrapper = styled("div")<{focused: boolean, error: boolean}>`
   display: flex;
   box-sizing: border-box;
-  text-align: ${props => props.type === 'reference' ? 'flex-start' : 'flex-end'};
-  width: ${props => props.col === '1' ? 40 : 100}px;
+  text-align: left;
+  width: 100px;
   height: 100%;
-  background: ${
-          props => props.col === '1' || props.row === '0'
-                  ? '#e2e2e2'
-                  : (props.focused ? 'white' : '#efefef')
-  };
+  background: ${props => props.focused ? 'white' : '#efefef'};
+  background-color: ${props => props.error ? 'rgba(255, 0, 0, .1)' : '#efefef'};
   align-items: center;
   justify-content: center;
-  border: 1.5px solid ${props => props.focused ? 'blue' : '#ccc'};
+  border: 1px solid ${props => props.focused ? 'blue' : '#ccc'};
   box-shadow: ${props => props.focused ? 'inset 3px 3px 5px rgba(0,0,0,.2)' : 'none'};
   z-index: ${props => props.focused ? 1 : 0}
 `

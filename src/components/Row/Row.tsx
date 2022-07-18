@@ -1,30 +1,34 @@
-import React from "react";
+import React, {useCallback, useMemo} from "react";
 import styled from "styled-components";
 import {ALPHABET} from "../../constants/Config";
 import { Cell } from '../Cell';
+import {ICell} from "../../@types";
 import {useStore} from "../../store/store";
 
 type IRowFilledProps = {
     line: string
 }
 export const RowFilled = ({ line }: IRowFilledProps) => {
-    const { activeCell } = useStore();
+    const { setActiveCell, activeCell, spreadsheet } = useStore();
+    const handleClick = useCallback((id: string) => {
+        const sheeCell = spreadsheet[id]
+        setActiveCell({
+            id,
+            value: sheeCell?.value,
+            formula: sheeCell?.formula
+        } as ICell)
+    }, [setActiveCell, spreadsheet])
+
+    const renderCells = useMemo(() => ALPHABET.map((item: string) => (
+        <Cell
+            key={ item + line }
+            id={ item + line}
+            onClick={() => handleClick(item + line)}
+        />
+    )), [handleClick, line])
     return (
         <RowStyled>
-            {ALPHABET.map((col: string) => (
-                <Cell
-                    key={col}
-                    row={line.toString()}
-                    col={col}
-                    type='raw'
-                    focused={col === activeCell.col && line === activeCell.row}
-                    isIndex={line === '0'}
-                >
-                    {line === '0' && col === '1' && ''}
-                    {line === '0' && col !== '1' && col}
-                    {line > '0' && col === '1' && line}
-                </Cell>
-            ))}
+            {renderCells}
         </RowStyled>
     )
 }
