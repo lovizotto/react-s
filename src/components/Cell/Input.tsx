@@ -1,48 +1,70 @@
 import React, {ChangeEvent, ForwardedRef, KeyboardEvent, useCallback, useState} from "react";
 import styled from "styled-components";
-import {CellContentType} from "./Cell";
 import {FORMULA_REGEX} from "../../constants/Config";
+import {ICell} from "../../@types";
+import {useStore} from "../../store/store";
 
 export type IInputData = {
     onChange: (value: string) => void,
-    onEditSubmit?: (value: { value: string, type: CellContentType }) => void,
-    onBlur: (value: string) => void,
-    className?: string
+    className?: string,
+    col: string,
+    row: string
 }
 
 export const Input = React.forwardRef(({
-    onEditSubmit,
-    className
+    className,
+    col,
+    row
 }: IInputData, ref: ForwardedRef<HTMLInputElement>) => {
-    const [value, setValue] = useState<string>('');
-    const [type, setType] = useState<CellContentType>('raw');
+    const { updateSpreadSheet, spreadsheet } = useStore();
+    const [cell, setCell] = useState<ICell>(spreadsheet?.[col+row] || {} as ICell);
 
     const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        setValue(e.target.value);
-    }, []);
+        setCell({
+            ...cell,
+            col,
+            row,
+            value: e.target.value,
+        });
+    }, [cell, col, row]);
 
-    const handleInputBlur = useCallback(() => {
-        onEditSubmit && onEditSubmit({value, type})
-    }, [onEditSubmit, value, type]);
-
-    const handleInputKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === '=' && e.target.value.length === 0) {
-            const value = e.target.value
-            const found = value.match(FORMULA_REGEX);
-            if (found) {
-                setValue(found[0]);
+    const handleInputBlur = useCallback((e: any) => {
+        const value =  cell?.references?.length > 0
+            ? spreadsheet?.[cell?.references[0]].value : e.target.value
+        updateSpreadSheet({
+            ...spreadsheet,
+            [col+row]: {
+                ...cell,
+                value,
+                formula: e.target.value
             }
-            setType('reference');
-        } else {
-            setType('raw')
-        }
-    }, [])
+        })
+    }, [cell, col, row, spreadsheet, updateSpreadSheet]);
+
+    /**
+     * TODO: accept more than one reference
+     */
+    const handleInputKeyDown = useCallback((e: KeyboardEvent<HTMLInputElement>) => {
+            const rawValue = e.target.value;
+            if (rawValue.startsWith('=')) {
+                const found = rawValue.match(FORMULA_REGEX) || [];
+                const rawFound = found[0].slice(1, found[0].length);
+                if (rawFound) {
+                    setCell({
+                        ...cell,
+                        references: [rawFound],
+                        formula: e.target.value,
+                        value: e.target.value
+                    });
+                }
+            }
+    }, [cell])
     return (
         <InputElement
             ref={ref}
             className={className}
             type='text'
-            defaultValue={value}
+            defaultValue={cell?.formula?.length > 0 ? cell?.formula : cell?.value}
             onChange={handleInputChange}
             onKeyUp={handleInputKeyDown}
             onBlur={handleInputBlur}

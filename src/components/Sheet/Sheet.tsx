@@ -5,35 +5,16 @@ import React, {
 import styled from 'styled-components'
 import {ALPHABET, LINE_AMOUNT} from  '../../constants/Config';
 import {Row} from '../Row';
+import {useStore} from "../../store/store";
 
-export interface ICellData {
-    data: string,
-    left?: string,
-    right?: string
-}
-
-export type ISheetData = {
-    [key: string]: ICellData
-}
-
-export type SheetProps = {
-    onChange: (value: ISheetData) => void,
-    data: ISheetData
-}
-
-export const Sheet = ({onChange, data}: SheetProps) => {
-    const [activeCell, setActiveCell] = useState({row: 1, col: 'A', type: 'raw'})
+export const Sheet = () => {
+    const {setActiveCell} = useStore();
     const handleTableClick = useCallback((e: any) => {
         if (e.target.dataset.col) {
-            setActiveCell(e.target.dataset)
-        }
-
-        if (e.target.dataset?.kind === 'reference') {
-
-        }
-
-        if (e.target.dataset?.kind === 'raw') {
-
+            setActiveCell({
+                ...e.target.dataset,
+                value: ''
+            })
         }
     }, [])
     const lines = new Array(LINE_AMOUNT).fill(undefined)
@@ -43,8 +24,7 @@ export const Sheet = ({onChange, data}: SheetProps) => {
                 return (
                     <Row
                         key={index}
-                        line={index}
-                        activeCell={activeCell}
+                        line={index.toString()}
                     />
                 )
             })}

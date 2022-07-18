@@ -1,59 +1,67 @@
 import React, {useEffect, useCallback, useState} from 'react';
 import './App.css';
 import { Sheet } from './components/Sheet';
-import {ISheetData} from "./components/Sheet/Sheet";
+import {SpreadSheetType} from "./@types/IStore";
+import {ICell} from "./@types";
+import {useStore} from "./store/store";
 
-const initialState: ISheetData  = {
+const initialState: SpreadSheetType = {
   'a1': {
-    data: 'This is a test',
-    left: undefined,
-    right: 'b4'
+    value: 'This is a test',
+    type: 'raw',
+    col: 'b',
+    row: '4',
+    references: [],
+    formula: ''
   },
   'b3': {
-    data: 'This is a test',
-    left: 'b4',
-    right: undefined
+    value: 'This is a test',
+    type: 'raw',
+    col: 'b',
+    row: '4',
+    references: [],
+    formula: ''
   },
   'b4': {
-    data: 'This is a test',
-    left: 'a1',
-    right: 'b3'
+    value: 'This is a test',
+    type: 'raw',
+    col: 'b',
+    row: '4',
+    references: [],
+    formula: ''
   } 
 }
 
 function App() {
-  const [data, setData] = useState<ISheetData>(() => {
-    const storage: string = localStorage.getItem('amplaTest') || ''
-    try {
-      return JSON.parse(storage) as ISheetData;
-    } catch (error: any) {
-      return initialState
-      console.log(error.getMessage())
-    }
-  })
+  const { spreadsheet, updateSpreadSheet } = useStore();
 
   useEffect(() => {
+    const storage: string = localStorage.getItem('amplaTest') || ''
+    try {
+      const storageSpreadsheet = JSON.parse(storage) as SpreadSheetType;
+      updateSpreadSheet(storageSpreadsheet);
+    } catch (error: any) {
+      console.log(error)
+    }
+  }, [])
 
-  }, [data]);
-
-
-  const handleSheetDataChange = useCallback((data: ISheetData) => {
+  const handleSheetDataChange = useCallback((data: ICell) => {
     try {
       const stringfyedData = JSON.stringify(data)
       localStorage.setItem('amplaTest', stringfyedData);
-      setData(data)
+      updateSpreadSheet({
+        ...spreadsheet,
+        [data.col+data.row]: {...data}
+      })
     } catch (error: any) {
       alert('Wasn\'t possible save.');
-      console.log(error.getMessage())
+      console.log(error)
     }
   }, [])
 
   return (
     <div className="App">
-      <Sheet 
-        data={data} 
-        onChange={handleSheetDataChange}
-      />
+      <Sheet />
     </div>
   );
 }

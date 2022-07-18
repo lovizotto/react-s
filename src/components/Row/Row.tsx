@@ -2,26 +2,27 @@ import React from "react";
 import styled from "styled-components";
 import {ALPHABET} from "../../constants/Config";
 import { Cell } from '../Cell';
+import {useStore} from "../../store/store";
 
-type IRowFilled = {
-    line: number,
-    activeCell: any
+type IRowFilledProps = {
+    line: string
 }
-export const RowFilled = ({ line, activeCell }: IRowFilled) => {
+export const RowFilled = ({ line }: IRowFilledProps) => {
+    const { activeCell } = useStore();
     return (
         <RowStyled>
-            {ALPHABET.map((cell: string) => (
+            {ALPHABET.map((col: string) => (
                 <Cell
-                    key={cell}
+                    key={col}
                     row={line.toString()}
-                    col={cell}
+                    col={col}
                     type='raw'
-                    isIndex={line === 0}
-                    focused={cell === activeCell.col && line.toString() === activeCell.row}
+                    focused={col === activeCell.col && line === activeCell.row}
+                    isIndex={line === '0'}
                 >
-                    {line === 0 && cell === '1' && ''}
-                    {line === 0 && cell !== '1' && cell}
-                    {line > 0 && cell === '1' && line}
+                    {line === '0' && col === '1' && ''}
+                    {line === '0' && col !== '1' && col}
+                    {line > '0' && col === '1' && line}
                 </Cell>
             ))}
         </RowStyled>
@@ -33,4 +34,3 @@ const RowStyled = styled.div`
     flex-direction: row;
     height: 40px;
 `
-export {}

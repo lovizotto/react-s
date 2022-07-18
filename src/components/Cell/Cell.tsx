@@ -1,12 +1,14 @@
-import React, {ChangeEvent, ForwardedRef, KeyboardEvent, useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import styled from "styled-components";
 import {Input} from "./Input";
+import {useStore} from "../../store/store";
+import {CellContentType} from "../../@types";
 
-export type ICell = {
+export type ICellProps = {
     row: string,
     col: string,
-    children: any,
     type: CellContentType,
+    children: any,
     isIndex: boolean,
     className?: string,
     focused: boolean
@@ -14,42 +16,38 @@ export type ICell = {
 const Cell = ({
   row,
   col,
+  type,
   children,
-  focused = false,
-  type = 'raw',
-  className }: ICell) => {
-    const [editing, setEditing] = useState<boolean>(false);
-    const cell = useRef(null);
+  isIndex,
+  focused,className }: ICellProps) => {
+    const { updateSpreadSheet, spreadsheet } = useStore();
+    const cellElement = useRef(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (editing && focused && inputRef.current) {
+        if (focused && inputRef.current) {
             inputRef.current.focus();
         }
-    }, [focused, editing]);
-
-    const handleInputDataBlue = useCallback(() => {
-        setEditing(false);
-    }, [])
+    }, [focused]);
 
     return (
         <div
-            ref={cell}
-            data-row={row}
+            ref={cellElement}
             data-col={col}
-            data-kind={type}
+            data-row={row}
+            data-type={type}
             className={className}
-            onClick={() => setEditing(focused && true)}
+            // onClick={() => setEditing(focused && true)}
         >
-            {editing
+            {focused
                 ? (
                     <Input
                         ref={inputRef}
+                        col={col}
+                        row={row}
                         onChange={(value) => console.log(value)}
-                        onBlur={handleInputDataBlue}
-                        onEditSubmit={(value) => console.log(value)}
                     />
-                ) : children}
+                ) : spreadsheet?.[col+row]?.value || children}
         </div>
     );
 }
@@ -71,5 +69,3 @@ export const CellContentWrapper = styled(Cell)`
   box-shadow: ${props => props.focused ? 'inset 3px 3px 5px rgba(0,0,0,.2)' : 'none'};
   z-index: ${props => props.focused ? 1 : 0}
 `
-
-export type CellContentType = 'raw' | 'reference';
