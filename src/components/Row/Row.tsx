@@ -4,6 +4,7 @@ import {ALPHABET} from "../../constants/Config";
 import { Cell } from '../Cell';
 import {ICell} from "../../@types";
 import {useStore} from "../../store/store";
+import {SheetLineIndex} from "../Sheet/SheetLineIndex";
 
 type IRowFilledProps = {
     line: string
@@ -28,6 +29,7 @@ export const RowFilled = ({ line }: IRowFilledProps) => {
     )), [handleClick, line])
     return (
         <RowStyled>
+            <SheetLineIndex>{line}</SheetLineIndex>
             {renderCells}
         </RowStyled>
     )

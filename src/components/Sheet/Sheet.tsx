@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import {ALPHABET, LINE_AMOUNT} from  '../../constants/Config';
 import {Row} from '../Row';
 import {SheetHeadColumns} from "./SheetHeadColumns";
+import {SheetLineIndex} from "./SheetLineIndex";
 
 export const Sheet = () => {
     const lines = useMemo(() => new Array(LINE_AMOUNT).fill(undefined), []);
