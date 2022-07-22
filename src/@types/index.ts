@@ -1,1 +1,1 @@
-export { ICell } from './ICell';
+export { ICell } from './ICell'
