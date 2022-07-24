@@ -1,8 +1,8 @@
 import React, { ChangeEvent, useCallback, useRef, useState } from 'react'
 import styled from 'styled-components'
-import { FORMULA_REGEX } from '../../constants/Config'
 import { ICell } from '../../@types'
 import { useStore } from '../../store/store'
+import { getCellValue } from './getCellValue'
 
 export type IInputData = {
 	className?: string
@@ -10,62 +10,20 @@ export type IInputData = {
 }
 
 export const Input = ({ className, cellId }: IInputData) => {
-	const { updateSpreadSheet, spreadsheet } = useStore()
+	const { updateSpreadsheet, spreadsheet, updateCellsByReference } =
+		useStore()
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [cell, setCell] = useState<ICell>(
 		spreadsheet?.[cellId] || ({} as ICell)
 	)
-
 	/**
 	 * Should be improved to execute just one time
 	 * It's missing a
 	 */
 	const handleInputChange = useCallback(
 		(e: ChangeEvent<HTMLInputElement>) => {
-			const rawValue = e.target.value
-			const data = {
-				id: cellId,
-				value: e.target.value,
-				formula: '',
-				reference: '',
-			}
-
-			if (rawValue.startsWith('=')) {
-				const found = rawValue.match(FORMULA_REGEX) || []
-				const rawFound = found[0]?.slice(1, found[0].length)
-
-				/**
-				 * This should be another function
-				 * It should be outside component
-				 */
-				let firstKey = rawFound
-				let error = false
-				while (
-					spreadsheet[firstKey]?.reference !== '' ||
-					!spreadsheet[firstKey]
-				) {
-					if (spreadsheet[firstKey]?.reference === cellId) {
-						error = true
-						break
-					}
-					firstKey = spreadsheet[firstKey].reference
-				}
-
-				if (rawFound) {
-					const cellValue = {
-						...data,
-						reference: rawFound,
-						formula: e.target.value,
-						value: spreadsheet?.[rawFound]?.value || e.target.value,
-						error,
-					}
-					setCell(cellValue)
-				} else {
-					setCell(data)
-				}
-			} else {
-				setCell(data)
-			}
+			const cellValue = getCellValue(e.target.value, cellId, spreadsheet)
+			setCell(cellValue)
 		},
 		[cellId, spreadsheet]
 	)
@@ -77,10 +35,10 @@ export const Input = ({ className, cellId }: IInputData) => {
 				[cellId]: cell,
 			}
 
-			updateSpreadSheet(sheet)
-			// updateValues(cell, spreadsheet)
+			updateSpreadsheet(sheet)
+			updateCellsByReference(cell)
 		},
-		[cell, updateSpreadSheet]
+		[cell, cellId, spreadsheet, updateCellsByReference, updateSpreadsheet]
 	)
 
 	const handleKeyUp = useCallback(
@@ -92,14 +50,6 @@ export const Input = ({ className, cellId }: IInputData) => {
 		[inputRef?.current]
 	)
 
-	// useEffect(() => {
-	//     const sheet = {
-	//         ...spreadsheet,
-	//         [cellId]: cell
-	//     }
-	//
-	//     updateSpreadSheet(sheet);
-	// }, [cell, cellId, updateSpreadSheet])
 	return (
 		<InputElement
 			ref={inputRef}
