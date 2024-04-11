@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useRef, useState } from 'react'
+import React, { ChangeEvent, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { ICell } from '../../@types'
 import { useStore } from '../../store/store'
@@ -20,35 +20,26 @@ export const Input = ({ className, cellId }: IInputData) => {
 	 * Should be improved to execute just one time
 	 * It's missing a
 	 */
-	const handleInputChange = useCallback(
-		(e: ChangeEvent<HTMLInputElement>) => {
-			const cellValue = getCellValue(e.target.value, cellId, spreadsheet)
-			setCell(cellValue)
-		},
-		[cellId, spreadsheet]
-	)
+	const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+		const cellValue = getCellValue(e.target.value, cellId, spreadsheet)
+		setCell(cellValue)
+	}
 
-	const handleInputBlur = useCallback(
-		(e: any) => {
-			const sheet = {
-				...spreadsheet,
-				[cellId]: cell,
-			}
+	const handleInputBlur = () => {
+		const sheet = {
+			...spreadsheet,
+			[cellId]: cell,
+		}
 
-			updateSpreadsheet(sheet)
-			updateCellsByReference(cell)
-		},
-		[cell, cellId, spreadsheet, updateCellsByReference, updateSpreadsheet]
-	)
+		updateSpreadsheet(sheet)
+		updateCellsByReference(cell)
+	}
 
-	const handleKeyUp = useCallback(
-		(e: any) => {
-			if (['Enter', 'Tab', 'Return'].includes(e.key)) {
-				inputRef?.current?.blur()
-			}
-		},
-		[inputRef?.current]
-	)
+	const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (['Enter', 'Tab', 'Return'].includes(e.key)) {
+			inputRef?.current?.blur()
+		}
+	}
 
 	return (
 		<InputElement

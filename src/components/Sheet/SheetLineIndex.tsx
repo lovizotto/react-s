@@ -2,6 +2,7 @@ import styled from 'styled-components'
 
 export const SheetLineIndex = styled.div`
 	display: flex;
+	position: sticky;
 	box-sizing: border-box;
 	text-align: left;
 	width: 40px;
@@ -10,4 +11,5 @@ export const SheetLineIndex = styled.div`
 	align-items: center;
 	justify-content: center;
 	border: 1px solid #ccc;
+	z-index: 1;
 `

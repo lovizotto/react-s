@@ -9,14 +9,23 @@ export const Sheet = () => {
 	return (
 		<Table>
 			<SheetHeadColumns />
-			{lines.map((item, index) => {
-				return index > 0 && <Row key={index} line={index.toString()} />
-			})}
+			<>
+				{lines.map((item, index) => {
+					return (
+						index > 0 && <Row key={index} line={index.toString()} />
+					)
+				})}
+			</>
 		</Table>
 	)
 }
 
 const Table = styled.div`
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
 	display: flex;
 	flex-direction: column;
 	width: ${ALPHABET.length * 100}px;

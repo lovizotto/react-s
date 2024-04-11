@@ -22,6 +22,7 @@ export const getCellValue = (
 		value,
 		formula: '',
 		reference: '',
+		status: 'default',
 	}
 
 	if (value.startsWith('=')) {

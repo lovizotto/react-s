@@ -1,4 +1,5 @@
 import create, { StoreApi } from 'zustand'
+import produce from 'immer'
 import { ICell } from '../@types'
 // @ts-ignore
 import uuid from 'react-uuid'
@@ -9,6 +10,7 @@ type SetState = StoreApi<IStore>['setState']
 type GetState = StoreApi<IStore>['getState']
 
 export interface IStore {
+	activeGroup: ICell[]
 	activeCell: ICell
 	spreadsheet: SpreadSheetType
 	setActiveCell: (activeCell: ICell) => void
@@ -26,6 +28,7 @@ const initialActiveCell: ICell = {
 	value: '',
 	reference: '',
 	formula: '',
+	status: 'default',
 }
 
 /**
@@ -51,8 +54,23 @@ const _initFromLocalStorage = (set: SetState, get: GetState) => {
 export const useStore = create<IStore>((set, get) => ({
 	spreadsheet: initialSpreadsheet,
 	spreadsheetId: '',
+	activeGroup: [],
 	activeCell: initialActiveCell,
-	setActiveCell: (activeCell: ICell) => set({ activeCell }),
+	setActiveCell: (activeCell: ICell) =>
+		set(
+			produce(draft => {
+				for (const key in draft.spreadsheet) {
+					draft.spreadsheet[key].status = 'default'
+				}
+
+				draft.spreadsheet[activeCell.id] = {
+					...activeCell,
+					status: activeCell.status,
+				}
+
+				draft.activeCell = activeCell
+			})
+		),
 	updateSpreadsheet: (spreadsheet: SpreadSheetType) => {
 		set({ spreadsheet })
 		get().updateLocalStorage(spreadsheet)
@@ -72,7 +90,6 @@ export const useStore = create<IStore>((set, get) => ({
 	},
 	initFromLocalStorage: () => _initFromLocalStorage(set, get),
 	updateLocalStorage: (spreadsheet: SpreadSheetType) => {
-		console.log(spreadsheet)
 		const storageSpreadsheet = JSON.stringify(spreadsheet)
 		localStorage.setItem(get().spreadsheetId, storageSpreadsheet)
 	},

@@ -23,9 +23,12 @@ export const Wrapper = styled.div`
 	height: 40px;
 	width: 100%;
 	box-sizing: border-box;
+	position: sticky;
+	z-index: 1;
 `
 
 const Cell = styled('div')<{ index: string }>`
+	position: sticky;
 	display: flex;
 	box-sizing: border-box;
 	align-items: center;
